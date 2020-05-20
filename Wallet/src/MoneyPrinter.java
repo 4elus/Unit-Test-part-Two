@@ -1,11 +1,7 @@
-public class MoneyPrinter extends Wallet{
-    public String print(String operation, String currency){
-        String result = "";
-        for (WalletOperations el : walletOperationsList) {
-            if (el.operation.equals(operation) && el.currency.equals(currency)){
-                result += el.operation + " " + el.currency + el.amount + "\n";
-            }
-        }
-        return result;
+public class MoneyPrinter{
+
+    public void print(String operation, String currency, int amount){
+        System.out.println(String.format("Действие: %s\nВалюта: %s\nСумма: %d",
+                operation, currency, amount));
     }
 }

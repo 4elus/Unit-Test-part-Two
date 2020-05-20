@@ -1,19 +1,31 @@
+import java.util.*;
+
 public class Bank {
-    public double convert(double value, String from, String to){
-        if (from == "USD" && to == "RUB"){
-            return value * 73;
-        }else if (from == "USD" && to == "EUR"){
-            return  (value * 0.92);
-        } else if (from == "RUB" && to == "USD"){
-            return  (value * 0.014);
-        } else if (from == "RUB" && to == "EUR"){
-            return (value * 0.013);
-        }else if (from == "EUR" && to == "RUB"){
-            return value * 79;
-        }else if (from == "EUR" && to == "USD"){
-            return  (value * 1.08);
-        }else {
-            return 0;
-        }
+    private Map<String, Double> currencyHash;
+    Random rnd;
+    public Bank(){
+        rnd = new Random();
+        setCurrencyHash();
+    }
+
+    void setCurrencyHash(){
+        currencyHash = new HashMap<String, Double>();
+        currencyHash.put("USD-RUB", 73.0);
+        currencyHash.put("USD-EUR", 0.92);
+
+        currencyHash.put("RUB-USD", 0.014);
+        currencyHash.put("RUB-EUR", 0.013);
+
+        currencyHash.put("EUR-RUB", 79.0);
+        currencyHash.put("EUR-USD", 1.08);
+    }
+
+    public int convert(int value, String from, String to) throws ValueException {
+        String key = String.format("%s-%s", from, to);
+
+        if (currencyHash.containsKey(key))
+            return (int) Math.round(currencyHash.get(key) * value + 0.2*rnd.nextInt(20));
+        else
+            throw new ValueException("В банке отсутвует одна из валют " + key);
     }
 }

@@ -4,99 +4,82 @@ import java.util.List;
 import java.util.Map;
 
 public class Wallet {
-    private Map<String, Integer> hashMapCurrency = new HashMap<String, Integer>();
+    public Map<String, Integer> hashMapCurrency;
     Bank bank;
     MoneyPrinter moneyPrinter;
-    List<WalletOperations> walletOperationsList;
 
     public Wallet(){
+        hashMapCurrency = new HashMap<String, Integer>();
         bank = new Bank();
-        walletOperationsList = new ArrayList<>();
-        hashMapCurrency.put("RUB", 0);
-        hashMapCurrency.put("USD", 0);
-        hashMapCurrency.put("EUR", 0);
+        moneyPrinter = new MoneyPrinter();
     }
 
+    //добавление валюты
     public void addMoney(String key, int value){
         if (hashMapCurrency.containsKey(key)){
             int balance = hashMapCurrency.get(key);
-            hashMapCurrency.put(key, balance + value);
-            walletOperationsList.add(new WalletOperations("addMoney", key, value));
-        }else{
-            System.out.println("Такая валюта не поддерживается");
+            hashMapCurrency.replace(key, balance + value);
         }
-    }
-
-    public String removeMoney(String key, int value){
-        if (value > hashMapCurrency.get(key)){
-             return  "На вашем счету недостаточно средств";
-        }else if (hashMapCurrency.containsKey(key)){
-            int balance = hashMapCurrency.get(key);
-            hashMapCurrency.put(key, balance - value);
-            walletOperationsList.add(new WalletOperations("removeMoney", key, value));
-            return String.valueOf(value);
+        else{
+            hashMapCurrency.put(key, value);
         }
-
-        return "Такая валюта не поддерживается";
+        moneyPrinter.print("ДОБАВЛЕНИЕ", key, value);
     }
-
-
-
-    public String getMoney(String key){
+    //извлеечние валюты
+    public void removeMoney(String key, int value) throws ValueException{
         if (hashMapCurrency.containsKey(key)){
-            return hashMapCurrency.get(key) + " " + key;
-        }else{
-            return "Такая валюта не поддерживается";
+            int balance = hashMapCurrency.get(key);
+            if (balance < value)
+                throw new ValueException("Недостаточно средств");
+            hashMapCurrency.replace(key, balance - value);
+            moneyPrinter.print("ИЗВЛЕЧЕНИЕ", key, value);
+        }
+        else{
+            throw new ValueException("Данная валюта отсутствует");
         }
     }
-
-
-    public double getTotalMoney(String key){
-        if (hashMapCurrency.containsKey(key)) {
-            double eur = 0;
-            double usd = 0;
-            double rub = 0;
-            double convert1 = 0;
-            double convert2 = 0;
-
-            for (Map.Entry entry : hashMapCurrency.entrySet()) {
-                if (entry.getKey() == "RUB") {
-                    rub += (int) entry.getValue();
-                } else if (entry.getKey() == "USD") {
-                    usd += (int) entry.getValue();
-                } else {
-                    eur += (int) entry.getValue();
-                }
-            }
-
-            if (key == "RUB") {
-                convert1 = bank.convert(usd, "USD", key);
-                convert2 = bank.convert(eur, "EUR", key);
-                return Math.round(rub + convert1 + convert2);
-            } else if (key == "USD") {
-                convert1 = bank.convert(rub, "RUB", key);
-                convert2 = bank.convert(eur, "EUR", key);
-                return Math.round(usd + convert1 + convert2);
-            } else {
-                convert1 = bank.convert(rub, "RUB", key);
-                convert2 = bank.convert(usd, "USD", key);
-                return Math.round(eur + convert1 + convert2);
-            }
-        }else {
-            System.out.println("Такая валюта не поддерживается");
+    //кол-во определенной валюты в кошельке
+    public int getMoney(String key){
+        if (hashMapCurrency.containsKey(key)){
+            return hashMapCurrency.get(key);
+        }else{
             return 0;
         }
     }
+    //кол-во видов валюты с ненулевым значением
+    public int getCurrencyAmount(){
+        int amount = 0;
+        for (String key: hashMapCurrency.keySet()) {
+            if (hashMapCurrency.get(key) > 0)
+                amount ++;
+        }
 
+        return amount;
+    }
+    //содержание кошелька
     public String toString() {
         String res = "{ ";
 
-        for (Map.Entry entry : hashMapCurrency.entrySet()) {
-            res +=  entry.getValue() + " " + entry.getKey() + "; ";
+        for (String key: hashMapCurrency.keySet()) {
+            res +=  String.format("%d %s; ",
+                    hashMapCurrency.get(key) ,
+                    key);
         }
 
         res += "}";
 
         return res;
     }
+    //конвертирование всех денег в одну валюту
+    public int getTotalMoney(String keyIn) throws ValueException{
+        int result = getMoney(keyIn);
+
+        for (String key: hashMapCurrency.keySet()) {
+            if (hashMapCurrency.get(key) > 0 && keyIn != key)
+                result += bank.convert(hashMapCurrency.get(key), key, keyIn);
+        }
+
+        return result;
+    }
+
 }
