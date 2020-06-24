@@ -4,100 +4,87 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MyTest {
-    @Test
-    public void addMoneyEmpty() {
-        Wallet wallet = new Wallet();
-        String key = "RUB";
-        wallet.addMoney(key, 500);
+    TestBank bank = new TestBank();
+    Wallet wallet = new Wallet(bank);
+    String mainKey = "RUB";
 
-        Assert.assertEquals(500, (long) wallet.hashMapCurrency.get(key));
+    @Test
+    public void addMoney() {
+        int add = 500;
+        int result = wallet.getMoney(mainKey) + add;
+
+        wallet.addMoney(mainKey, add);
+        Assert.assertEquals(result, wallet.getMoney(mainKey));
     }
 
     @Test
-    public void addMoneyNotEmpty() {
-        Wallet wallet = new Wallet();
-        String key = "RUB";
-        wallet.addMoney(key, 500);
-        wallet.addMoney(key, 520);
+    public void addMoneyNull() {
+        int result = wallet.getMoney(mainKey);
 
-        Assert.assertEquals(1020, (long) wallet.hashMapCurrency.get(key));
+        wallet.addMoney(mainKey, 0);
+        Assert.assertEquals(result, wallet.getMoney(mainKey));
     }
 
     @Test(expected = ValueException.class)
     public void removeMoneyCurrencyNotFound() throws Exception{
-        Wallet wallet = new Wallet();
-        String key = "RUB";
-        wallet.removeMoney(key, 20);
+        wallet.removeMoney("WER", 20);
     }
 
     @Test(expected = ValueException.class)
     public void removeMoneyExcess() throws Exception{
-        Wallet wallet = new Wallet();
-        String key = "RUB";
-        wallet.addMoney(key, 500);
-        wallet.removeMoney(key, 520);
+        int remove = wallet.getMoney(mainKey) + 500;
+
+        wallet.removeMoney(mainKey, remove);
     }
 
     @Test
     public void removeMoneyNotEmpty() throws Exception{
-        Wallet wallet = new Wallet();
-        String key = "RUB";
-        wallet.addMoney(key, 500);
-        wallet.addMoney(key, 520);
-        wallet.removeMoney(key, 20);
+        int addAndRemove = 500;
+        int result = wallet.getMoney(mainKey);
 
-        Assert.assertEquals(1000, (long) wallet.hashMapCurrency.get(key));
+        wallet.addMoney(mainKey, addAndRemove);
+        wallet.removeMoney(mainKey, addAndRemove);
+
+        Assert.assertEquals(result, wallet.getMoney(mainKey));
     }
 
     @Test
     public void getMoneyNotEmpty() throws Exception{
-        Wallet wallet = new Wallet();
-        String key = "RUB";
-        wallet.addMoney(key, 500);
+        int result = 500;
+        wallet.addMoney("RES", 500);
 
-        Assert.assertEquals(500, wallet.getMoney(key));
+        Assert.assertEquals(500, wallet.getMoney("RES"));
     }
 
     @Test
     public void getMoneyEmpty() throws Exception{
-        Wallet wallet = new Wallet();
-        String key = "RUB";
-
-        Assert.assertEquals(0, wallet.getMoney(key));
+        Assert.assertEquals(0, wallet.getMoney("empty"));
     }
 
     @Test
-    public void getCurrencyAmountAll() throws Exception{
-        Wallet wallet = new Wallet();
-        wallet.addMoney("RUB", 10);
-        wallet.addMoney("USD", 20);
+    public void bankTestConvertEurToRub() throws Exception{
+        int convert = bank.convert(1000, "EUR", "RUB");
 
-        Assert.assertEquals(2, wallet.getCurrencyAmount());
+        Assert.assertEquals(79000, convert);
     }
 
     @Test
-    public void getCurrencyAmountNotAll() throws Exception{
-        Wallet wallet = new Wallet();
-        wallet.addMoney("RUB", 10);
-        wallet.addMoney("USD", 0);
+    public void bankTestConvertEurToRubReverseInteger() throws Exception{
+        int convert = bank.convert(1000, "RUB", "EUR");
 
-        Assert.assertEquals(1, wallet.getCurrencyAmount());
+        Assert.assertEquals(13, convert);
     }
 
     @Test
-    public void toStringEmpty() throws Exception{
-        Wallet wallet = new Wallet();
+    public void bankTestConvertEurToRubReverseDouble() throws Exception{
+        int convert = bank.convert(233, "RUB", "EUR");
 
-        Assert.assertEquals("{ }", wallet.toString());
+        Assert.assertEquals(3, convert);
     }
 
-    @Test
-    public void toStringNotEmpty() throws Exception{
-        Wallet wallet = new Wallet();
-        wallet.addMoney("RUB", 10);
-        wallet.addMoney("USD", 20);
-
-        Assert.assertEquals("{ 20 USD; 10 RUB; }", wallet.toString());
+    @Test(expected = ValueException.class)
+    public void bankTestConvertUnknownCurrency() throws Exception{
+        bank.convert(50, "unknown", "unknown");
     }
 }
 

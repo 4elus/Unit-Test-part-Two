@@ -4,14 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Wallet {
-    public Map<String, Integer> hashMapCurrency;
-    Bank bank;
-    MoneyPrinter moneyPrinter;
+    private Map<String, Integer> hashMapCurrency;
+    private Bank bank;
 
-    public Wallet(){
-        hashMapCurrency = new HashMap<String, Integer>();
-        bank = new Bank();
-        moneyPrinter = new MoneyPrinter();
+    public Wallet(Bank bank){
+        this.hashMapCurrency = new HashMap<String, Integer>();
+        this.bank = bank;
     }
 
     //добавление валюты
@@ -20,10 +18,9 @@ public class Wallet {
             int balance = hashMapCurrency.get(key);
             hashMapCurrency.replace(key, balance + value);
         }
-        else{
-            hashMapCurrency.put(key, value);
-        }
-        moneyPrinter.print("ДОБАВЛЕНИЕ", key, value);
+        else hashMapCurrency.put(key, value);
+
+        MoneyPrinter.print("ДОБАВЛЕНИЕ", key, value);
     }
     //извлеечние валюты
     public void removeMoney(String key, int value) throws ValueException{
@@ -31,20 +28,19 @@ public class Wallet {
             int balance = hashMapCurrency.get(key);
             if (balance < value)
                 throw new ValueException("Недостаточно средств");
+
             hashMapCurrency.replace(key, balance - value);
-            moneyPrinter.print("ИЗВЛЕЧЕНИЕ", key, value);
+
+            MoneyPrinter.print("ИЗВЛЕЧЕНИЕ", key, value);
         }
-        else{
-            throw new ValueException("Данная валюта отсутствует");
-        }
+        else throw new ValueException("Данная валюта отсутствует");
     }
     //кол-во определенной валюты в кошельке
     public int getMoney(String key){
-        if (hashMapCurrency.containsKey(key)){
+        if (hashMapCurrency.containsKey(key))
             return hashMapCurrency.get(key);
-        }else{
-            return 0;
-        }
+
+        return 0;
     }
     //кол-во видов валюты с ненулевым значением
     public int getCurrencyAmount(){
@@ -58,17 +54,12 @@ public class Wallet {
     }
     //содержание кошелька
     public String toString() {
-        String res = "{ ";
+        String res = "";
 
-        for (String key: hashMapCurrency.keySet()) {
-            res +=  String.format("%d %s; ",
-                    hashMapCurrency.get(key) ,
-                    key);
-        }
+        for (String key: hashMapCurrency.keySet())
+            res +=  String.format("%d %s; ", hashMapCurrency.get(key) , key);
 
-        res += "}";
-
-        return res;
+        return "{ " + res + "}";
     }
     //конвертирование всех денег в одну валюту
     public int getTotalMoney(String keyIn) throws ValueException{

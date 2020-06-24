@@ -1,14 +1,15 @@
 import java.util.*;
 
 public class Bank {
-    private Map<String, Double> currencyHash;
+    protected Map<String, Double> currencyHash;
     Random rnd;
+
     public Bank(){
-        rnd = new Random();
+        this.rnd = new Random();
         setCurrencyHash();
     }
 
-    void setCurrencyHash(){
+    protected void setCurrencyHash(){
         currencyHash = new HashMap<String, Double>();
         currencyHash.put("USD-RUB", 73.0);
         currencyHash.put("USD-EUR", 0.92);
@@ -24,7 +25,7 @@ public class Bank {
         String key = String.format("%s-%s", from, to);
 
         if (currencyHash.containsKey(key))
-            return (int) Math.round(currencyHash.get(key) * value + 0.2*rnd.nextInt(20));
+            return (int) Math.round(currencyHash.get(key) * value + 0.2*(rnd.nextInt(20) - rnd.nextInt(20)));
         else
             throw new ValueException("В банке отсутвует одна из валют " + key);
     }
